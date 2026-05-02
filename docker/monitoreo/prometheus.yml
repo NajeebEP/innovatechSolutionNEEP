@@ -1,0 +1,91 @@
+.yml
+# Configuración de Prometheus 2.51 para Innovatech Solutions
+# Ubicación: docker/monitoring/prometheus.yml
+# =============================================================
+
+# Configuración global aplicada a todos los jobs
+global:
+  scrape_interval: 15s          # Cada 15s va a buscar métricas
+  evaluation_interval: 15s      # Cada 15s evalúa reglas de alertas
+  scrape_timeout: 10s           # Si un servicio no responde en 10s, falla
+
+  # Etiquetas que se agregan a TODAS las métricas recolectadas
+  external_labels:
+    cluster: 'innovatech-local'
+    environment: 'development'
+
+# =============================================================
+# SCRAPE_CONFIGS — Lista de servicios a monitorear
+# Cada "job" representa un grupo de servicios.
+# Prometheus visita "targets" cada 15s en la ruta "metrics_path"
+# y guarda lo que encuentra.
+# =============================================================
+
+scrape_configs:
+
+  # -----------------------------------------------------------
+  # El propio Prometheus (se monitorea a sí mismo)
+  # -----------------------------------------------------------
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # -----------------------------------------------------------
+  # MICROSERVICIOS — Spring Boot Actuator expone /actuator/prometheus
+  # -----------------------------------------------------------
+  - job_name: 'ms-proyectos'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['ms-proyectos:8081']
+        labels:
+          servicio: 'gestion-proyectos'
+          tipo: 'microservicio'
+
+  - job_name: 'ms-recursos'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['ms-recursos:8082']
+        labels:
+          servicio: 'gestion-recursos'
+          tipo: 'microservicio'
+
+  - job_name: 'ms-analitica'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['ms-analitica:8083']
+        labels:
+          servicio: 'monitoreo-analitica'
+          tipo: 'microservicio'
+
+  # -----------------------------------------------------------
+  # BFF (Backend For Frontend)
+  # -----------------------------------------------------------
+  - job_name: 'bff'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['bff:8084']
+        labels:
+          servicio: 'bff'
+          tipo: 'orquestador'
+
+  # -----------------------------------------------------------
+  # API GATEWAY
+  # -----------------------------------------------------------
+  - job_name: 'api-gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['api-gateway:9000']
+        labels:
+          servicio: 'api-gateway'
+          tipo: 'gateway'
+
+  # -----------------------------------------------------------
+  # SERVICE DISCOVERY — Eureka
+  # -----------------------------------------------------------
+  - job_name: 'eureka-server'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['eureka-server:8761']
+        labels:
+          servicio: 'eureka'
+          tipo: 'service-discovery'

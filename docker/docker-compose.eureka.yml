@@ -1,0 +1,35 @@
+# =============================================================
+# docker-compose.eureka.yml
+# Service Discovery — Spring Cloud Eureka 4.1
+# Levantar: docker compose -f docker-compose.eureka.yml up -d
+# UI: http://localhost:8761
+# Debe levantarse ANTES que los microservicios, BFF y Gateway
+# =============================================================
+
+services:
+
+  eureka-server:
+    build:
+      context: ../eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      # En modo standalone no se registra a sí mismo
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
+      EUREKA_CLIENT_FETCH_REGISTRY: "false"
+      SERVER_PORT: 8761
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - innovatech-net
+
+networks:
+  innovatech-net:
+    external: true
