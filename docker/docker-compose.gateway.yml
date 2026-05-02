@@ -1,0 +1,54 @@
+# =============================================================
+# docker-compose.gateway.yml
+# API Gateway — Spring Cloud Gateway 4.1 / JDK 21 LTS
+# Puerto expuesto al exterior: 9000
+# Requiere: docker-compose.eureka.yml, docker-compose.infra.yml
+#           y docker-compose.bff.yml levantados
+# Levantar: docker compose -f docker-compose.gateway.yml up -d
+# =============================================================
+
+services:
+
+  api-gateway:
+    build:
+      context: ../api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 9000
+
+      # Service Discovery
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+
+      # Keycloak — validación de JWT
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/innovatech
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/innovatech/protocol/openid-connect/certs
+
+      # Rutas hacia el BFF
+      SPRING_CLOUD_GATEWAY_ROUTES_0_ID: bff-route
+      SPRING_CLOUD_GATEWAY_ROUTES_0_URI: http://bff:8084
+      SPRING_CLOUD_GATEWAY_ROUTES_0_PREDICATES_0: Path=/api/**
+      SPRING_CLOUD_GATEWAY_ROUTES_0_FILTERS_0: StripPrefix=1
+
+      # Rate limiting (por IP)
+      SPRING_CLOUD_GATEWAY_DEFAULT_FILTERS_0: RequestRateLimiter=10, 20
+
+      # Actuator
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus,metrics
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - innovatech-net
+
+networks:
+  innovatech-net:
+    external: true
