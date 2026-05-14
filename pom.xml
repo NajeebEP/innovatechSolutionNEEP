@@ -34,8 +34,12 @@
         <module>api-gateway</module>
         <module>bff</module>
         <module>servicios/ms-proyectos</module>
-        <module>servicios/ms-recursos</module>
-        <module>servicios/ms-analitica</module>
+        <!--
+             Re-agregar a medida que cada módulo se vaya creando.
+             Maven valida que todo <module> exista al parsear el padre.
+            <module>servicios/ms-recursos</module>
+            <module>servicios/ms-analitica</module>
+        -->
     </modules>
 
     <properties>
@@ -51,7 +55,7 @@
         <spring-cloud.version>2025.1.0</spring-cloud.version>
         <resilience4j.version>2.2.0</resilience4j.version>
         <mapstruct.version>1.6.3</mapstruct.version>
-        <lombok.version>1.18.36</lombok.version>
+        <lombok.version>1.18.44</lombok.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
         <springdoc-openapi.version>2.6.0</springdoc-openapi.version>
 
