@@ -10,12 +10,16 @@ spring:
     password: ${DB_PROYECTOS_PASSWORD:proyectos_dev}
   jpa:
     hibernate:
-      # `update` is convenient for greenfield dev. Switch to `validate` +
-      # Flyway/Liquibase before going past the prototype stage.
-      ddl-auto: update
+      # Schema is owned by Flyway (src/main/resources/db/migration).
+      # Hibernate only checks that the entity matches the live schema.
+      ddl-auto: validate
     open-in-view: false
     properties:
       hibernate.format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
 
 eureka:
   client:
